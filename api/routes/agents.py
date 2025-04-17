@@ -1,12 +1,12 @@
 from enum import Enum
-from typing import AsyncGenerator, List, Optional
+from typing import AsyncGenerator, List, Optional, Tuple
 
 from agno.agent import Agent
 from fastapi import APIRouter, HTTPException, status
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
-from agents.operator import AgentType, get_agent, get_available_agents
+from agents.operator import AgentType, ModelProvider, get_agent, get_available_agents, get_available_models
 from utils.log import logger
 
 ######################################################
@@ -16,9 +16,9 @@ from utils.log import logger
 agents_router = APIRouter(prefix="/agents", tags=["Agents"])
 
 
-class Model(str, Enum):
-    gpt_4o = "gpt-4o"
-    o3_mini = "o3-mini"
+# Create Model enum dynamically from available models
+model_list = get_available_models()
+Model = Enum('Model', {model_id.replace('-', '_').replace('.', '_'): model_id for model_id, _ in model_list})
 
 
 @agents_router.get("", response_model=List[str])
@@ -30,6 +30,26 @@ async def list_agents():
         List[str]: List of agent identifiers
     """
     return get_available_agents()
+
+
+class ModelInfo(BaseModel):
+    """Model information including ID and provider"""
+    id: str
+    provider: str
+
+
+@agents_router.get("/models", response_model=List[ModelInfo])
+async def list_models():
+    """
+    Returns a list of all available models with their providers.
+
+    Returns:
+        List[ModelInfo]: List of models with their providers
+    """
+    return [
+        ModelInfo(id=model_id, provider=provider.value)
+        for model_id, provider in get_available_models()
+    ]
 
 
 async def chat_response_streamer(agent: Agent, message: str) -> AsyncGenerator:
