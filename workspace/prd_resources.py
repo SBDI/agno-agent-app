@@ -168,8 +168,9 @@ prd_ecs_cluster = EcsCluster(
 # -*- Build container environment
 container_env = {
     "RUNTIME_ENV": "prd",
-    # Get the OpenAI API key from the local environment
+    # Get the API keys from the local environment
     "OPENAI_API_KEY": getenv("OPENAI_API_KEY"),
+    "GROQ_API_KEY": getenv("GROQ_API_KEY"),
     # Enable monitoring
     "AGNO_MONITOR": "True",
     "AGNO_API_KEY": getenv("AGNO_API_KEY"),
