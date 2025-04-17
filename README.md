@@ -37,13 +37,19 @@ source .venv/bin/activate
 
 2. Export API keys
 
-Required: Set the `OPENAI_API_KEY` environment variable using
+Required: Set one of the following API keys:
 
+For OpenAI models:
 ```sh
-export OPENAI_API_KEY=***
+export OPENAI_API_KEY=sk-***
 ```
 
-> you may use any model provider, just need to update the agents in the /agents folder
+For Groq models:
+```sh
+export GROQ_API_KEY=gsk-***
+```
+
+> The application supports both OpenAI and Groq models. OpenAI models (gpt-4o, o3-mini) and Groq models (llama-3.3-70b-versatile, llama-3.3-8b-versatile, mixtral-8x7b-32768) can be selected from the UI.
 
 Optional: Set the `EXA_API_KEY` if you'd like to use Exa search
 
