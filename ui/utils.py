@@ -11,6 +11,8 @@ from agno.document.reader.text_reader import TextReader
 from agno.document.reader.website_reader import WebsiteReader
 from agno.utils.log import logger
 
+from agents.operator import get_available_models, ModelProvider
+
 
 async def initialize_agent_session_state(agent_name: str):
     logger.info(f"---*--- Initializing session state for {agent_name} ---*---")
@@ -24,17 +26,43 @@ async def initialize_agent_session_state(agent_name: str):
 
 async def selected_model() -> str:
     """Display a model selector in the sidebar."""
-    model_options = {
-        "gpt-4o": "gpt-4o",
-        "o3-mini": "o3-mini",
-    }
+    # Get the list of available models
+    models = get_available_models()
+
+    # Create a dictionary of model options
+    model_options = {model_id: model_id for model_id, _ in models}
+
+    # Group models by provider for the selectbox
+    openai_models = [model_id for model_id, provider in models if provider == ModelProvider.OPENAI]
+    groq_models = [model_id for model_id, provider in models if provider == ModelProvider.GROQ]
+
+    # Create the provider selector
+    provider = st.sidebar.radio(
+        "Model Provider",
+        options=["OpenAI", "Groq"],
+        index=0,
+        key="provider_selector",
+        horizontal=True,
+    )
+
+    # Show models based on selected provider
+    if provider == "OpenAI":
+        model_list = openai_models
+    else:  # Groq
+        model_list = groq_models
+
+    # Default to first model in the list
+    default_index = 0
+
+    # Show model selector based on available models for the provider
     selected_model = st.sidebar.selectbox(
         "Choose a model",
-        options=list(model_options.keys()),
-        index=0,
+        options=model_list,
+        index=default_index,
         key="model_selector",
     )
-    return model_options[selected_model]
+
+    return selected_model
 
 
 async def add_message(
