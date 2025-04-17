@@ -2,6 +2,7 @@ from textwrap import dedent
 from typing import Optional
 
 from agno.agent import Agent
+from agno.models.groq import Groq
 from agno.models.openai import OpenAIChat
 from agno.storage.agent.postgres import PostgresAgentStorage
 from agno.tools.duckduckgo import DuckDuckGoTools
@@ -21,12 +22,18 @@ def get_scholar(
         additional_context += f"You are interacting with the user: {user_id}"
         additional_context += "</context>"
 
+    # Use Groq model if model_id starts with 'llama' or 'mixtral', otherwise use OpenAI
+    if model_id.startswith(("llama", "mixtral")):
+        model = Groq(id=model_id)
+    else:
+        model = OpenAIChat(id=model_id)
+
     return Agent(
         name="Scholar",
         agent_id="scholar",
         user_id=user_id,
         session_id=session_id,
-        model=OpenAIChat(id=model_id),
+        model=model,
         # Tools available to the agent
         tools=[DuckDuckGoTools()],
         # Storage for the agent
